@@ -1,0 +1,1558 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แบบสอบถามความต้องการรายวิชา สกร. v7</title>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a5f7a;
+            --primary-light: #2e86ab;
+            --primary-dark: #0d3d4f;
+            --accent: #e65100;
+            --accent-light: #ff8a50;
+            --success: #2e7d32;
+            --success-light: #4caf50;
+            --selected-bg: #c8e6c9;
+            --selected-border: #2e7d32;
+            --bg-cream: #faf6f0;
+            --text-dark: #1a1a1a;
+            --text-muted: #666666;
+            --border: #e0d5c7;
+            --shadow: rgba(26, 95, 122, 0.12);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            font-family: 'Prompt', 'Kanit', sans-serif;
+            background: var(--bg-cream);
+            height: 100%;
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        /* HEADER */
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 5px 12px;
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 {
+            font-size: 0.8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .header-select {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 20px;
+        }
+
+        .header-select label {
+            font-size: 0.6rem;
+            opacity: 0.9;
+            white-space: nowrap;
+        }
+
+        .header-select input {
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: none;
+            font-size: 0.6rem;
+            width: 200px;
+            font-family: inherit;
+        }
+
+        .header-select input::placeholder {
+            color: #999;
+        }
+
+        .header-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .view-toggle-header {
+            display: flex;
+            gap: 2px;
+            background: rgba(255,255,255,0.2);
+            padding: 2px;
+            border-radius: 4px;
+        }
+
+        .view-btn-h {
+            padding: 3px 8px;
+            border: none;
+            background: transparent;
+            color: white;
+            cursor: pointer;
+            font-size: 0.55rem;
+            border-radius: 3px;
+        }
+
+        .view-btn-h.active {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .progress-badge {
+            background: rgba(255,255,255,0.15);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.65rem;
+        }
+
+        .progress-badge strong {
+            color: var(--accent-light);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-header {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-add { background: rgba(76, 175, 80, 0.8); color: white; }
+        .btn-clear { background: rgba(244, 67, 54, 0.7); color: white; }
+        .btn-submit { background: var(--success); color: white; }
+        .btn-submit:disabled { background: rgba(255,255,255,0.3); cursor: not-allowed; }
+
+        /* MAIN CONTAINER - FIXED */
+        .main-container {
+            display: flex;
+            position: fixed;
+            top: 38px;
+            left: 0; right: 0; bottom: 0;
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        .left-sidebar {
+            width: 170px;
+            min-width: 170px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--border);
+        }
+
+        .left-sidebar.collapsed {
+            width: 32px;
+            min-width: 32px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 4px 6px;
+            border-bottom: 2px solid var(--primary);
+            background: var(--bg-cream);
+        }
+
+        .sidebar-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .left-sidebar.collapsed .sidebar-title span { display: none; }
+
+        .sidebar-toggle {
+            width: 18px; height: 18px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.55rem;
+        }
+
+        .ranking-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 3px;
+        }
+
+        .left-sidebar.collapsed .ranking-list { display: none; }
+
+        .ranking-slot {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 3px;
+            background: #f5f5f5;
+            border-radius: 3px;
+            min-height: 20px;
+            margin-bottom: 2px;
+            border: 1px dashed var(--border);
+            cursor: grab;
+        }
+
+        .ranking-slot.filled {
+            background: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 100%);
+            border: none;
+            color: white;
+        }
+
+        .ranking-slot.drag-over {
+            border: 2px solid var(--accent);
+        }
+
+        .ranking-number {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.45rem;
+        }
+
+        .ranking-slot.filled .ranking-number {
+            background: rgba(255,255,255,0.25);
+        }
+
+        .ranking-content {
+            flex: 1;
+            font-size: 0.5rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-muted);
+        }
+
+        .ranking-slot.filled .ranking-content {
+            color: white;
+        }
+
+        .ranking-remove {
+            width: 12px; height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.45rem;
+        }
+
+        .ranking-slot.filled .ranking-remove { display: flex; }
+        .ranking-remove:hover { background: rgba(255,0,0,0.5); }
+
+        .sidebar-footer {
+            padding: 5px;
+            border-top: 1px solid var(--border);
+            background: var(--bg-cream);
+            font-size: 0.42rem;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        .sidebar-footer strong {
+            color: var(--primary);
+            font-size: 0.45rem;
+        }
+
+        .sidebar-footer .section-title {
+            margin-top: 4px;
+        }
+
+        .left-sidebar.collapsed .sidebar-footer { display: none; }
+
+        .collapsed-info {
+            display: none;
+            writing-mode: vertical-rl;
+            font-size: 0.5rem;
+            color: var(--primary);
+            font-weight: 600;
+            padding: 6px 0;
+            text-align: center;
+        }
+
+        .left-sidebar.collapsed .collapsed-info { display: block; }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* FILTER BAR */
+        .filter-bar {
+            background: white;
+            padding: 4px 6px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .search-box {
+            width: 140px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 3px 5px 3px 22px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.6rem;
+        }
+
+        .search-box::before {
+            content: "🔍";
+            position: absolute;
+            left: 5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.55rem;
+        }
+
+        .filter-scroll-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            overflow: hidden;
+        }
+
+        .scroll-btn {
+            width: 18px; height: 18px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-scroll {
+            flex: 1;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .filter-scroll::-webkit-scrollbar { display: none; }
+
+        .category-tabs {
+            display: flex;
+            gap: 3px;
+        }
+
+        .category-tab {
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            font-size: 0.55rem;
+            white-space: nowrap;
+        }
+
+        .category-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* COURSE LIST */
+        .course-list-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px;
+        }
+
+        .category-section {
+            margin-bottom: 8px;
+        }
+
+        .category-header {
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+
+        .category-header.cat-1a { background: linear-gradient(135deg, #d84315 0%, #e64a19 100%); }
+        .category-header.cat-1a-np { background: linear-gradient(135deg, #6d4c41 0%, #8d6e63 100%); }
+        .category-header.cat-1a-jd { background: linear-gradient(135deg, #f57c00 0%, #ff9800 100%); }
+        .category-header.cat-1b { background: linear-gradient(135deg, #c2185b 0%, #e91e63 100%); }
+        .category-header.cat-1c { background: linear-gradient(135deg, #7b1fa2 0%, #9c27b0 100%); }
+        .category-header.cat-2a { background: linear-gradient(135deg, #1565c0 0%, #1e88e5 100%); }
+        .category-header.cat-2b { background: linear-gradient(135deg, #00838f 0%, #00acc1 100%); }
+        .category-header.cat-3 { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); }
+        .category-header.cat-4a { background: linear-gradient(135deg, #ef6c00 0%, #fb8c00 100%); }
+        .category-header.cat-4b { background: linear-gradient(135deg, #5d4037 0%, #795548 100%); }
+        .category-header.cat-5 { background: linear-gradient(135deg, #33691e 0%, #558b2f 100%); }
+        .category-header.cat-6 { background: linear-gradient(135deg, #c62828 0%, #e53935 100%); }
+        .category-header.cat-7 { background: linear-gradient(135deg, #212121 0%, #424242 100%); }
+        .category-header.cat-8 { background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%); }
+        .category-header.cat-9 { background: linear-gradient(135deg, #7b1fa2 0%, #ab47bc 100%); }
+        .category-header.cat-10 { background: linear-gradient(135deg, #455a64 0%, #607d8b 100%); }
+        .category-header.cat-11 { background: linear-gradient(135deg, #b71c1c 0%, #c62828 100%); }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+            gap: 4px;
+        }
+
+        body.compact-mode .course-grid {
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 3px;
+        }
+
+        .course-card {
+            background: #f8f8f8;
+            border-radius: 4px;
+            padding: 3px 5px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            min-height: 28px;
+            position: relative;
+        }
+
+        body.compact-mode .course-card {
+            padding: 2px 4px;
+            min-height: 24px;
+            gap: 3px;
+        }
+
+        .course-card:hover {
+            border-color: var(--primary-light);
+            background: white;
+        }
+
+        .course-card.selected {
+            border-color: var(--selected-border);
+            background: var(--selected-bg);
+        }
+
+        /* Badge ติ๊กถูกเขียว */
+        .course-card.selected::before {
+            content: "✓";
+            position: absolute;
+            top: -5px; left: -5px;
+            width: 16px; height: 16px;
+            background: var(--success);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        /* Badge อันดับสีส้ม */
+        .course-card.selected::after {
+            content: attr(data-rank);
+            position: absolute;
+            top: -5px; right: -5px;
+            min-width: 16px; height: 16px;
+            padding: 0 3px;
+            background: var(--accent);
+            color: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.45rem;
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .course-card.selected .course-id {
+            background: var(--success);
+        }
+
+        .course-id {
+            min-width: 22px; height: 22px;
+            border-radius: 3px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.55rem;
+            line-height: 1;
+        }
+
+        body.compact-mode .course-id {
+            min-width: 18px; height: 18px;
+            font-size: 0.5rem;
+        }
+
+        .source-tag {
+            font-size: 0.3rem;
+            padding: 0 2px;
+            border-radius: 2px;
+            margin-top: 1px;
+        }
+
+        .source-tag.skr { background: rgba(255,255,255,0.3); color: white; }
+        .source-tag.social { background: var(--accent); color: white; }
+
+        .course-name {
+            flex: 1;
+            font-size: 0.55rem;
+            font-weight: 500;
+            line-height: 1.2;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        body.compact-mode .course-name {
+            font-size: 0.5rem;
+        }
+
+        .rank-dropdown {
+            width: 24px;
+            padding: 1px;
+            border: 1px solid var(--border);
+            border-radius: 3px;
+            font-size: 0.5rem;
+            background: white;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        body.compact-mode .rank-dropdown {
+            width: 20px;
+            font-size: 0.45rem;
+        }
+
+        .course-card.selected .rank-dropdown {
+            border-color: var(--success);
+            font-weight: 600;
+        }
+
+        /* TOOLTIP */
+        .tooltip {
+            position: fixed;
+            background: var(--text-dark);
+            color: white;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            z-index: 1000;
+            max-width: 280px;
+            pointer-events: none;
+            display: none;
+        }
+
+        .tooltip.show { display: block; }
+
+        /* MODAL */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 16px;
+            width: 90%;
+            max-width: 380px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .modal-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .modal-close {
+            width: 24px; height: 24px;
+            border: none;
+            background: var(--bg-cream);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .custom-input-scroll {
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .custom-input-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .btn-add-more {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+            padding: 7px 0;
+            border: 2px dashed var(--primary-light);
+            border-radius: 5px;
+            background: rgba(46, 134, 171, 0.06);
+            color: var(--primary);
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.2s;
+        }
+
+        .btn-add-more:hover {
+            background: rgba(46, 134, 171, 0.15);
+        }
+
+        .btn-add-more.hidden {
+            display: none;
+        }
+
+        .custom-input-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .custom-input-row span {
+            width: 16px;
+            text-align: center;
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.75rem;
+        }
+
+        .custom-input-row input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 0.75rem;
+        }
+
+        .custom-input-row input.error {
+            border-color: #f44336;
+            background: #ffebee;
+        }
+
+        .modal-footer {
+            margin-top: 14px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .modal-btn {
+            padding: 8px 16px;
+            border-radius: 5px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+        }
+
+        .modal-btn.cancel { background: var(--bg-cream); }
+        .modal-btn.save { background: var(--primary); color: white; }
+
+        /* TOAST */
+        .toast {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .toast.success { background: var(--success); }
+        .toast.warning { background: var(--accent); }
+        .toast.error { background: #d32f2f; }
+
+        /* LOADING */
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+        }
+
+        .loading-overlay.show { display: flex; }
+
+        .loading-content {
+            background: white;
+            padding: 24px 40px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 32px; height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: #f0f0f0; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-light); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <h1>📋 แบบสอบถาม สกร.</h1>
+                <div class="header-select">
+                    <label>ประธานกลุ่ม (จังหวัด):</label>
+                    <input type="text" id="centerSearch" list="centerList" placeholder="พิมพ์ค้นหาหรือเลือก...">
+                    <datalist id="centerList">
+                        <option value="เจ้าพระยาป่าสัก (สระบุรี)">
+                        <option value="ลุ่มน้ำเจ้าพระยา (กรุงเทพมหานครฯ)">
+                        <option value="ท่าจีนถิ่นแม่กลอง (สุพรรณบุรี)">
+                        <option value="สมุทรคีรี (ประจวบคีรีขันธ์)">
+                        <option value="อ่าวไทย (นครศรีธรรมราช)">
+                        <option value="อันดามัน (พังงา)">
+                        <option value="ชายแดนใต้ (สตูล)">
+                        <option value="เบญจบูรพา (จันทบุรี)">
+                        <option value="สุดฝั่งบูรพา (ชลบุรี)">
+                        <option value="ภูธานี (อุดรธานี)">
+                        <option value="สนม (มุกดาหาร)">
+                        <option value="ร้อยแก่นสารสินธุ์ (มหาสารคาม)">
+                        <option value="นครชัยบุรินทร์ (นครราชสีมา)">
+                        <option value="สามเหลี่ยมมรกต (อุบลราชธานี)">
+                        <option value="หล่ายดอย (เชียงใหม่)">
+                        <option value="อิงดอย (พะเยา)">
+                        <option value="ห้าขุนศึก (เพชรบูรณ์)">
+                        <option value="อู่ข้าวอู่น้ำ (นครสวรรค์)">
+                    </datalist>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="view-toggle-header">
+                    <button class="view-btn-h active" id="viewNormal">ปกติ</button>
+                    <button class="view-btn-h" id="viewCompact">กะทัดรัด</button>
+                </div>
+                <div class="progress-badge">เลือก <strong id="selectedCount">0</strong>/20</div>
+            </div>
+            <div class="header-right">
+                <button class="btn-header btn-add" id="addCourseBtn">➕ เพิ่มวิชา</button>
+                <button class="btn-header btn-clear" id="btnClear">🗑️ ล้าง</button>
+                <button class="btn-header btn-submit" id="btnSubmit" disabled>✓ ส่ง</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+        <aside class="left-sidebar" id="leftSidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">🏆 <span>อันดับที่เลือก</span></span>
+                <button class="sidebar-toggle" id="sidebarToggle">≡</button>
+            </div>
+            <div class="collapsed-info" id="collapsedInfo">0/20</div>
+            <div class="ranking-list" id="rankingList"></div>
+            <div class="sidebar-footer">
+                <strong>📖 วิธีใช้:</strong><br>
+                • คลิกวิชาด้านขวา เลือกอันดับ<br>
+                • ลาก (Drag) วิชามาวางในช่อง<br>
+                • ลากสลับอันดับ / กด ✕ ลบ<br>
+                • เพิ่มวิชาเองได้ 20 วิชา<br>
+                <strong class="section-title">📋 คำชี้แจง:</strong><br>
+                • เลือกวิชาที่ต้องการ สูงสุด 20<br>
+                • อันดับ 1 = ต้องการมากที่สุด<br>
+                • ส่วนกลางคัดเหลือ 8 วิชา
+            </div>
+        </aside>
+
+        <div class="right-panel">
+            <div class="filter-bar">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="ค้นหา...">
+                </div>
+                <div class="filter-scroll-container">
+                    <button class="scroll-btn" id="scrollLeft">◀</button>
+                    <div class="filter-scroll" id="filterScroll">
+                        <div class="category-tabs" id="categoryTabs">
+                            <button class="category-tab active" data-category="all">ทั้งหมด</button>
+                            <button class="category-tab" data-category="cat-1a">อาหารคาว</button>
+                            <button class="category-tab" data-category="cat-1a-np">น้ำพริก</button>
+                            <button class="category-tab" data-category="cat-1a-jd">จานเดียว</button>
+                            <button class="category-tab" data-category="cat-1b">อาหารว่าง</button>
+                            <button class="category-tab" data-category="cat-1c">เครื่องดื่ม</button>
+                            <button class="category-tab" data-category="cat-2a">วิชาชีพ</button>
+                            <button class="category-tab" data-category="cat-2b">อาชีพอิสระ</button>
+                            <button class="category-tab" data-category="cat-3">ออนไลน์</button>
+                            <button class="category-tab" data-category="cat-4a">AI</button>
+                            <button class="category-tab" data-category="cat-4b">ทักษะชีวิต</button>
+                            <button class="category-tab" data-category="cat-5">เกษตร</button>
+                            <button class="category-tab" data-category="cat-6">Delivery</button>
+                            <button class="category-tab" data-category="cat-7">TikTok</button>
+                            <button class="category-tab" data-category="cat-8">Google</button>
+                            <button class="category-tab" data-category="cat-9">AI ธุรกิจ</button>
+                            <button class="category-tab" data-category="cat-10">รับจ้าง</button>
+                            <button class="category-tab" data-category="cat-11">ต่างประเทศ</button>
+                        </div>
+                    </div>
+                    <button class="scroll-btn" id="scrollRight">▶</button>
+                </div>
+            </div>
+            <div class="course-list-container" id="courseListContainer"></div>
+        </div>
+    </main>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ เพิ่มวิชาเอง (สูงสุด 20)</h3>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div class="custom-input-scroll" id="customInputScroll">
+            <div class="custom-input-list" id="customInputList">
+                <div class="custom-input-row"><span>1</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c1"></div>
+                <div class="custom-input-row"><span>2</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c2"></div>
+                <div class="custom-input-row"><span>3</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c3"></div>
+                <div class="custom-input-row"><span>4</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c4"></div>
+                <div class="custom-input-row"><span>5</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c5"></div>
+            </div>
+            </div>
+            <button type="button" class="btn-add-more hidden" id="btnAddMoreCustom">＋ เพิ่มช่องวิชา</button>
+            <div class="modal-footer">
+                <button class="modal-btn cancel" id="modalCancel">ยกเลิก</button>
+                <button class="modal-btn save" id="modalSave">บันทึก</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div>กำลังส่งข้อมูล...</div>
+        </div>
+    </div>
+
+    <script>
+        const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBs65btqoU2unyOykwQjrsC2GiaYG8b0aQ-9LZa1rS6RQ61xAjWBLUnTSaHRHyXPVeoA/exec';
+
+        const searchAliases = {
+            'ติ๊กตอก': 'tiktok', 'ติกตอก': 'tiktok', 'tiktok': 'tiktok',
+            'ไลน์': 'line', 'line': 'line',
+            'เฟซบุ๊ก': 'facebook', 'เฟสบุค': 'facebook', 'facebook': 'facebook',
+            'ยูทูป': 'youtube', 'youtube': 'youtube',
+            'กูเกิล': 'google', 'google': 'google',
+            'ชอปปี้': 'shopee', 'shopee': 'shopee',
+            'ลาซาด้า': 'lazada', 'lazada': 'lazada',
+            'แกร็บ': 'grab', 'grab': 'grab',
+            'แชทจีพีที': 'chatgpt', 'chatgpt': 'chatgpt',
+            'แคนวา': 'canva', 'canva': 'canva',
+            'เอไอ': 'ai', 'ai': 'ai'
+        };
+
+        const courses = [
+            { id: 1, name: "แกงเขียวหวานไก่ม้วนกับแห้วจีน", category: "cat-1a", source: "สกร." },
+            { id: 2, name: "ต้มส้มปลาแรด", category: "cat-1a", source: "สกร." },
+            { id: 3, name: "แกงสามรส", category: "cat-1a", source: "สกร." },
+            { id: 4, name: "ยำถั่วงอก", category: "cat-1a", source: "สกร." },
+            { id: 5, name: "ปลากะพงม้วน", category: "cat-1a", source: "สกร." },
+            { id: 6, name: "แกงเหงาหงอด", category: "cat-1a", source: "สกร." },
+            { id: 7, name: "ยำสตรอเบอรี่น้ำมันงาม่อน", category: "cat-1a", source: "สกร." },
+            { id: 8, name: "ข้าวปลาแกะ (Fish Rice)", category: "cat-1a", source: "Social" },
+            { id: 9, name: "กะเพราหมูกรอบพรีเมี่ยม", category: "cat-1a", source: "Social" },
+            { id: 10, name: "กะเพราทะเล/กะเพราถาด", category: "cat-1a", source: "Social" },
+            { id: 11, name: "ไก่กรอบซอสเกาหลี", category: "cat-1a", source: "Social" },
+            { id: 12, name: "ปีกไก่ทอดคลุกผง", category: "cat-1a", source: "Social" },
+            { id: 13, name: "หมี่คลุก/เส้นเล็กคลุก", category: "cat-1a", source: "Social" },
+            { id: 14, name: "เส้นเล็กไก่ฉีก", category: "cat-1a", source: "Social" },
+            { id: 15, name: "Salmon Rice/ข้าวแซลมอน", category: "cat-1a", source: "Social" },
+            { id: 16, name: "กุ้งแช่น้ำปลา (สูตรเจ้าดัง)", category: "cat-1a", source: "Social" },
+            { id: 17, name: "แกงเขียวหวานสูตรดารา", category: "cat-1a", source: "Social" },
+            { id: 18, name: "ไข่พะโล้สูตรดารา", category: "cat-1a", source: "Social" },
+            { id: 19, name: "หมูปิ้งสูตรปลาร้า/น้ำพริก", category: "cat-1a", source: "Social" },
+            { id: 20, name: "มาม่าหน้าโรงเรียน", category: "cat-1a", source: "Social" },
+            { id: 21, name: "หมูกรอบสูตรดารา", category: "cat-1a", source: "Social" },
+            { id: 22, name: "หมูทอดน้ำปลา", category: "cat-1a", source: "Social" },
+            { id: 23, name: "น้ำพริกเผาปลาแรดทรงเครื่อง", category: "cat-1a-np", source: "สกร." },
+            { id: 24, name: "น้ำพริกปลาร้าลุยสวน", category: "cat-1a-np", source: "สกร." },
+            { id: 25, name: "น้ำพริกมะสัง", category: "cat-1a-np", source: "สกร." },
+            { id: 26, name: "น้ำพริกผักชีคุณท้าว", category: "cat-1a-np", source: "สกร." },
+            { id: 27, name: "น้ำพริกใบชางาม่อน", category: "cat-1a-np", source: "สกร." },
+            { id: 28, name: "ผัดไทยโบราณ", category: "cat-1a-jd", source: "สกร." },
+            { id: 29, name: "ข้าวต้มเครื่อง", category: "cat-1a-jd", source: "สกร." },
+            { id: 30, name: "หมี่กะทิ", category: "cat-1a-jd", source: "สกร." },
+            { id: 31, name: "ขนมจีนแห้ง", category: "cat-1a-jd", source: "สกร." },
+            { id: 32, name: "ข้าวมันส้มตำ", category: "cat-1a-jd", source: "สกร." },
+            { id: 33, name: "ข้าวเผือก", category: "cat-1a-jd", source: "สกร." },
+            { id: 34, name: "ข้าวแกงกะหรี่โฮมเมด", category: "cat-1a-jd", source: "Social" },
+            { id: 35, name: "ขนมจีบหมู", category: "cat-1b", source: "สกร." },
+            { id: 36, name: "หมี่กรอบโบราณ", category: "cat-1b", source: "สกร." },
+            { id: 37, name: "ขนมช่อม่วงจีบนก", category: "cat-1b", source: "สกร." },
+            { id: 38, name: "จุ๋ยก๊วยทรงเครื่อง", category: "cat-1b", source: "สกร." },
+            { id: 39, name: "มันฝรั่งบดทอด", category: "cat-1b", source: "สกร." },
+            { id: 40, name: "ผัดกระท้อน", category: "cat-1b", source: "สกร." },
+            { id: 41, name: "ข้าวตังน้ำมันเมล็ดชา", category: "cat-1b", source: "สกร." },
+            { id: 42, name: "ขนมครกสูตรไข่", category: "cat-1b", source: "Social" },
+            { id: 43, name: "แซนวิช / ขนมปังปิ้งหน้าโรงเรียน", category: "cat-1b", source: "Social" },
+            { id: 44, name: "เค้กกล้วยหอมชีส", category: "cat-1b", source: "Social" },
+            { id: 45, name: "สังขยาชาไทย", category: "cat-1b", source: "Social" },
+            { id: 46, name: "Dial-in Espresso / การชงกาแฟ", category: "cat-1c", source: "สกร." },
+            { id: 47, name: "Latte Art เบื้องต้น", category: "cat-1c", source: "สกร." },
+            { id: 48, name: "การทำเมนูกาแฟร้อน-เย็น-ปั่น", category: "cat-1c", source: "สกร." },
+            { id: 49, name: "การสร้างเมนู Signature Drink", category: "cat-1c", source: "สกร." },
+            { id: 50, name: "ชาไทย Specialty", category: "cat-1c", source: "Social" },
+            { id: 51, name: "ชานมไข่มุก", category: "cat-1c", source: "Social" },
+            { id: 52, name: "มัทฉะ/ชาเขียวนม", category: "cat-1c", source: "Social" },
+            { id: 53, name: "น้ำลำไยหม้อใหญ่", category: "cat-1c", source: "Social" },
+            { id: 54, name: "Cold Brew / กาแฟสกัดเย็น", category: "cat-1c", source: "Social" },
+            { id: 55, name: "สมูทตี้สุขภาพสไตล์ร้านดัง", category: "cat-1c", source: "Social" },
+            { id: 56, name: "ชาผลไม้สไตล์จีน", category: "cat-1c", source: "Social" },
+            { id: 57, name: "หลักการนวดไทยขั้นพื้นฐาน", category: "cat-2a", source: "สกร." },
+            { id: 58, name: "การกำหนดมูลค่าสินค้า (ตั้งราคา)", category: "cat-2a", source: "สกร." },
+            { id: 59, name: "การบริหารต้นทุนการผลิตสินค้า", category: "cat-2a", source: "สกร." },
+            { id: 60, name: "การออกแบบบรรจุภัณฑ์", category: "cat-2a", source: "สกร." },
+            { id: 61, name: "การจัดจำหน่ายตามความต้องการลูกค้า", category: "cat-2a", source: "สกร." },
+            { id: 62, name: "การเย็บประกอบเสื้อผ้า", category: "cat-2a", source: "สกร." },
+            { id: 63, name: "การออกแบบลายบาติก", category: "cat-2a", source: "สกร." },
+            { id: 64, name: "เทคนิคการออกแบบลวดลายร่วมสมัย", category: "cat-2a", source: "สกร." },
+            { id: 65, name: "เทคนิคการออกแบบแพทเทิร์นชุดผ้าไทยแบบร่วมสมัย", category: "cat-2a", source: "สกร." },
+            { id: 66, name: "การมัดลายมัดหมี่", category: "cat-2a", source: "สกร." },
+            { id: 67, name: "ขั้นตอนการหมักปลาเพื่อทำกะปิ", category: "cat-2a", source: "สกร." },
+            { id: 68, name: "ไรเดอร์ Grab/Bolt/Robinhood", category: "cat-2b", source: "Social" },
+            { id: 69, name: "เปลี่ยนของไม่ใช้ขายออนไลน์สร้างรายได้", category: "cat-2b", source: "Social" },
+            { id: 70, name: "ถ่ายภาพอาหารออนไลน์ให้น่าทาน", category: "cat-2b", source: "Social" },
+            { id: 71, name: "เปิดร้าน Shopee", category: "cat-3", source: "Social" },
+            { id: 72, name: "เปิดร้าน Lazada", category: "cat-3", source: "Social" },
+            { id: 73, name: "เปิดร้าน Facebook Marketplace", category: "cat-3", source: "Social" },
+            { id: 74, name: "TikTok Shop / ปักตะกร้า", category: "cat-3", source: "Social" },
+            { id: 75, name: "Shopee Affiliate", category: "cat-3", source: "Social" },
+            { id: 76, name: "Lazada Affiliate", category: "cat-3", source: "Social" },
+            { id: 77, name: "Admin ร้านออนไลน์ / รับตอบแชท", category: "cat-3", source: "Social" },
+            { id: 78, name: "ไลฟ์สด TikTok ขายของ", category: "cat-3", source: "Social" },
+            { id: 79, name: "ขายของมือสอง Facebook", category: "cat-3", source: "Social" },
+            { id: 80, name: "Dropshipping จากจีน", category: "cat-3", source: "Social" },
+            { id: 81, name: "นำสินค้าชาวบ้านมาขายออนไลน์", category: "cat-3", source: "Social" },
+            { id: 82, name: "YouTube Channel สร้างรายได้", category: "cat-3", source: "Social" },
+            { id: 83, name: "เป็น Influencer มือใหม่", category: "cat-3", source: "Social" },
+            { id: 84, name: "AI ช่วยงานออฟฟิศ (ChatGPT/Claude/Gemini)", category: "cat-4a", source: "Social" },
+            { id: 85, name: "AI ในชีวิตประจำวัน", category: "cat-4a", source: "Social" },
+            { id: 86, name: "AI สร้างคอนเทนต์ / เขียนบทความ", category: "cat-4a", source: "Social" },
+            { id: 87, name: "AI สร้างภาพ (Image Generator)", category: "cat-4a", source: "Social" },
+            { id: 88, name: "AI ตัดต่อวิดีโอ", category: "cat-4a", source: "Social" },
+            { id: 89, name: "เครื่องมือแปลภาษาสำหรับแม่ค้าคุยกับลูกค้าต่างชาติ", category: "cat-4a", source: "Social" },
+            { id: 90, name: "AI สร้างสื่อนำเสนอ (Presentation)", category: "cat-4a", source: "Social" },
+            { id: 91, name: "ทำบัญชีส่วนบุคคล", category: "cat-4a", source: "Social" },
+            { id: 92, name: "การกินถูกวิธีเพื่อสุขภาพและประหยัด", category: "cat-4b", source: "Social" },
+            { id: 93, name: "การนอนถูกเวลา ห่างไกลโรค", category: "cat-4b", source: "Social" },
+            { id: 94, name: "การออกกำลังกายถูกวิธีไม่ต้องพึ่งยา", category: "cat-4b", source: "Social" },
+            { id: 95, name: "Meal Prep - วางแผนอาหาร 30 วัน ประหยัดค่าใช้จ่าย", category: "cat-4b", source: "Social" },
+            { id: 96, name: "การเก็บวัตถุดิบให้อยู่ได้นาน (ผัก ผลไม้ เนื้อสัตว์)", category: "cat-4b", source: "Social" },
+            { id: 97, name: "ปลูกผักสวนครัว (กะเพรา โหระพา ผักชี พริก)", category: "cat-5", source: "Social" },
+            { id: 98, name: "ปลูกผักกินใบ (ผักบุ้ง คะน้า กวางตุ้ง)", category: "cat-5", source: "Social" },
+            { id: 99, name: "ปลูกผักกินผล (มะเขือ แตงกวา ถั่วฝักยาว)", category: "cat-5", source: "Social" },
+            { id: 100, name: "ปลูกมะเขือเทศในกระถาง", category: "cat-5", source: "Social" },
+            { id: 101, name: "ปลูกต้นหอม กระเทียม ขิง ข่า ตะไคร้", category: "cat-5", source: "Social" },
+            { id: 102, name: "เพาะถั่วงอกกินเอง", category: "cat-5", source: "Social" },
+            { id: 103, name: "ปลูกผักไฮโดรโปนิกส์เบื้องต้น", category: "cat-5", source: "Social" },
+            { id: 104, name: "สมัครและตั้งร้านบน GrabFood จากครัวบ้าน/คอนโด", category: "cat-6", source: "Social" },
+            { id: 105, name: "สมัครและตั้งร้านบน LINE MAN จากครัวบ้าน/คอนโด", category: "cat-6", source: "Social" },
+            { id: 106, name: "ตั้งเมนูและราคาให้เหมาะกับการขายเดลิเวอรี", category: "cat-6", source: "Social" },
+            { id: 107, name: "เลือกเขตจัดส่งและรับออเดอร์รอบแรกสำหรับร้านอาหารเดลิเวอรี", category: "cat-6", source: "Social" },
+            { id: 108, name: "บริหารออเดอร์และรีวิวให้ร้านเดลิเวอรีดูน่าเชื่อถือ", category: "cat-6", source: "Social" },
+            { id: 109, name: "ออกแบบเมนูเดลิเวอรีให้ขายดีและไม่พังระหว่างขนส่ง", category: "cat-6", source: "Social" },
+            { id: 110, name: "คำนวณต้นทุนและตั้งราคาเมนูเดลิเวอรีให้มีกำไรแม้มีค่า GP", category: "cat-6", source: "Social" },
+            { id: 111, name: "วางระบบครัวและเตรียมวัตถุดิบสำหรับร้านเดลิเวอรีขนาดเล็ก", category: "cat-6", source: "Social" },
+            { id: 112, name: "เปิดร้าน TikTok Shop", category: "cat-7", source: "Social" },
+            { id: 113, name: "TikTok Affiliate สร้างรายได้", category: "cat-7", source: "Social" },
+            { id: 114, name: "เทคนิคไลฟ์สด TikTok (ตอน 1) - อุปกรณ์ เวลา", category: "cat-7", source: "Social" },
+            { id: 115, name: "เทคนิคไลฟ์สด TikTok (ตอน 2) - ดึงคนดู ปิดการขาย", category: "cat-7", source: "Social" },
+            { id: 116, name: "สร้าง Content TikTok ให้ยอดขึ้น", category: "cat-7", source: "Social" },
+            { id: 117, name: "LINE OA / LINE MyShop ขายของ", category: "cat-7", source: "Social" },
+            { id: 118, name: "ขายของผ่าน Instagram", category: "cat-7", source: "Social" },
+            { id: 119, name: "ทำให้ร้านขึ้นใน Google Maps ด้วย Google Business Profile", category: "cat-8", source: "Social" },
+            { id: 120, name: "ปรับโปรไฟล์ร้านใน Google Maps ให้ค้นหาเจอง่ายและได้รีวิวดี", category: "cat-8", source: "Social" },
+            { id: 121, name: "ขายของกินในกลุ่ม Facebook ย่านบ้านให้ไม่โดนแบนและมีคนทักซื้อ", category: "cat-8", source: "Social" },
+            { id: 122, name: "Facebook Ads ยิงแอดขายของ (ตอน 1) - สร้างโฆษณา", category: "cat-8", source: "Social" },
+            { id: 123, name: "Facebook Ads ยิงแอดขายของ (ตอน 2) - ตั้งงบ วัดผล", category: "cat-8", source: "Social" },
+            { id: 124, name: "ขายอาหารในคอนโด/หมู่บ้าน", category: "cat-8", source: "Social" },
+            { id: 125, name: "ใช้ Google Gemini เป็นเลขาออฟฟิศ", category: "cat-9", source: "Social" },
+            { id: 126, name: "Microsoft Copilot ช่วยงานออฟฟิศ", category: "cat-9", source: "Social" },
+            { id: 127, name: "ทำให้แบรนด์อยู่ในคำตอบ AI (GEO)", category: "cat-9", source: "Social" },
+            { id: 128, name: "ทักษะ Admin ตอบแชทร้านค้า", category: "cat-10", source: "Social" },
+            { id: 129, name: "งาน Call Center เบื้องต้น", category: "cat-10", source: "Social" },
+            { id: 130, name: "รับจ้างรีวิวสินค้า (UGC Creator)", category: "cat-10", source: "Social" },
+            { id: 131, name: "ตัดต่อวิดีโอสั้นรับจ้าง", category: "cat-10", source: "Social" },
+            { id: 132, name: "ขายของไทยไปจีนผ่าน Douyin", category: "cat-11", source: "Social" },
+            { id: 133, name: "เปิดร้านบน Taobao / Tmall Global", category: "cat-11", source: "Social" }
+        ];
+
+        const categoryInfo = {
+            'cat-1a': { name: '🍜 อาหารคาว', header: 'cat-1a' },
+            'cat-1a-np': { name: '🌶️ น้ำพริกและเครื่องจิ้ม', header: 'cat-1a-np' },
+            'cat-1a-jd': { name: '🍛 อาหารจานเดียว', header: 'cat-1a-jd' },
+            'cat-1b': { name: '🍰 อาหารว่าง', header: 'cat-1b' },
+            'cat-1c': { name: '☕ เครื่องดื่ม', header: 'cat-1c' },
+            'cat-2a': { name: '💼 วิชาชีพหมวด สกร.', header: 'cat-2a' },
+            'cat-2b': { name: '🚴 วิชาชีพอิสระ', header: 'cat-2b' },
+            'cat-3': { name: '🛒 ธุรกิจออนไลน์', header: 'cat-3' },
+            'cat-4a': { name: '🤖 พัฒนาตนเอง/AI', header: 'cat-4a' },
+            'cat-4b': { name: '💪 ทักษะชีวิต ลดรายจ่าย', header: 'cat-4b' },
+            'cat-5': { name: '🌱 เกษตรในครัวเรือน', header: 'cat-5' },
+            'cat-6': { name: '🚚 ร้านอาหาร Delivery', header: 'cat-6' },
+            'cat-7': { name: '📱 TikTok และ Social Commerce', header: 'cat-7' },
+            'cat-8': { name: '🔍 Google และการตลาดออนไลน์', header: 'cat-8' },
+            'cat-9': { name: '🤖 เครื่องมือ AI สำหรับธุรกิจ', header: 'cat-9' },
+            'cat-10': { name: '💼 งานรับจ้างออนไลน์', header: 'cat-10' },
+            'cat-11': { name: '🌏 ขายต่างประเทศ', header: 'cat-11' }
+        };
+
+        const categoryOrder = ['cat-1a', 'cat-1a-np', 'cat-1a-jd', 'cat-1b', 'cat-1c', 'cat-2a', 'cat-2b', 'cat-3', 'cat-4a', 'cat-4b', 'cat-5', 'cat-6', 'cat-7', 'cat-8', 'cat-9', 'cat-10', 'cat-11'];
+
+        let rankings = new Array(20).fill(null);
+        let currentCategory = 'all';
+        let searchQuery = '';
+        let customCourses = [];
+        let allCourses = [...courses];
+        let submittedCenters = new Set();
+
+        const leftSidebar = document.getElementById('leftSidebar');
+        const courseListContainer = document.getElementById('courseListContainer');
+        const rankingList = document.getElementById('rankingList');
+        const searchInput = document.getElementById('searchInput');
+        const selectedCountEl = document.getElementById('selectedCount');
+        const collapsedInfo = document.getElementById('collapsedInfo');
+        const btnSubmit = document.getElementById('btnSubmit');
+        const toast = document.getElementById('toast');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const modalOverlay = document.getElementById('modalOverlay');
+        const filterScroll = document.getElementById('filterScroll');
+        const tooltip = document.getElementById('tooltip');
+
+        function init() {
+            renderRankings();
+            renderCourses();
+            setupEventListeners();
+            fetchSubmittedCenters();
+        }
+
+        async function fetchSubmittedCenters() {
+            if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') return;
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL);
+                const data = await res.json();
+                if (data.submittedCenters && Array.isArray(data.submittedCenters)) {
+                    submittedCenters = new Set(data.submittedCenters);
+                }
+            } catch (e) { /* ไม่บล็อคการใช้งานถ้าโหลดไม่ได้ */ }
+        }
+
+        function renderRankings() {
+            rankingList.innerHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const slot = document.createElement('div');
+                slot.className = `ranking-slot ${rankings[i] ? 'filled' : ''}`;
+                slot.draggable = true;
+                const course = rankings[i] ? allCourses.find(c => c.id === rankings[i]) : null;
+                const displayName = course ? (course.name.length > 18 ? course.name.substring(0, 16) + '...' : course.name) : 'ว่าง';
+
+                slot.innerHTML = `
+                    <div class="ranking-number">${i + 1}</div>
+                    <div class="ranking-content" title="${course ? course.name : ''}">${displayName}</div>
+                    ${course ? '<button class="ranking-remove">✕</button>' : ''}
+                `;
+
+                slot.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', JSON.stringify({ fromRank: i + 1 }));
+                });
+
+                slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('drag-over'); });
+                slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+
+                slot.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    slot.classList.remove('drag-over');
+                    try {
+                        const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                        if (data.fromRank) {
+                            const fromIdx = data.fromRank - 1;
+                            const temp = rankings[fromIdx];
+                            rankings[fromIdx] = rankings[i];
+                            rankings[i] = temp;
+                            updateUI();
+                        } else if (data.courseId) {
+                            selectRank(data.courseId, i + 1);
+                        }
+                    } catch (err) {}
+                });
+
+                const removeBtn = slot.querySelector('.ranking-remove');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const courseId = rankings[i];
+                        if (courseId >= 1000) {
+                            customCourses = customCourses.filter(c => c.id !== courseId);
+                            allCourses = allCourses.filter(c => c.id !== courseId);
+                            const idx = courseId - 1000;
+                            const input = document.querySelector(`[data-custom-id="c${idx + 1}"]`);
+                            if (input) input.value = '';
+                        }
+                        rankings[i] = null;
+                        updateUI();
+                        showToast('ลบออกแล้ว');
+                    });
+                }
+
+                rankingList.appendChild(slot);
+            }
+        }
+
+        function smartSearch(query, text) {
+            const q = query.toLowerCase().trim();
+            const t = text.toLowerCase();
+            if (t.includes(q)) return true;
+            for (const [alias, target] of Object.entries(searchAliases)) {
+                if (q.includes(alias) || alias.includes(q)) {
+                    if (t.includes(target) || t.includes(alias)) return true;
+                }
+            }
+            return false;
+        }
+
+        function renderCourses() {
+            courseListContainer.innerHTML = '';
+            let filtered = allCourses.filter(c => {
+                const matchCategory = currentCategory === 'all' || c.category === currentCategory;
+                const matchSearch = searchQuery === '' || smartSearch(searchQuery, c.name);
+                return matchCategory && matchSearch;
+            });
+
+            const grouped = {};
+            filtered.forEach(course => {
+                if (!grouped[course.category]) grouped[course.category] = [];
+                grouped[course.category].push(course);
+            });
+
+            categoryOrder.forEach(cat => {
+                if (grouped[cat] && grouped[cat].length > 0) {
+                    const section = document.createElement('div');
+                    section.className = 'category-section';
+
+                    const header = document.createElement('div');
+                    header.className = `category-header ${categoryInfo[cat].header}`;
+                    header.textContent = categoryInfo[cat].name;
+                    section.appendChild(header);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'course-grid';
+
+                    grouped[cat].forEach(course => {
+                        const rankIndex = rankings.indexOf(course.id);
+                        const isSelected = rankIndex !== -1;
+
+                        const card = document.createElement('div');
+                        card.className = `course-card ${isSelected ? 'selected' : ''}`;
+                        card.draggable = true;
+                        if (isSelected) card.dataset.rank = `#${rankIndex + 1}`;
+
+                        let options = '<option value="">-</option>';
+                        for (let i = 1; i <= 20; i++) {
+                            const sel = (isSelected && rankIndex + 1 === i) ? 'selected' : '';
+                            options += `<option value="${i}" ${sel}>${i}</option>`;
+                        }
+
+                        const sourceClass = course.source === 'สกร.' ? 'skr' : 'social';
+                        const sourceLabel = course.source === 'สกร.' ? 'สกร.' : 'Social';
+                        const shortName = course.name.length > 20 ? course.name.substring(0, 18) + '...' : course.name;
+
+                        card.innerHTML = `
+                            <div class="course-id">${course.id}<span class="source-tag ${sourceClass}">${sourceLabel}</span></div>
+                            <div class="course-name">${shortName}</div>
+                            <select class="rank-dropdown">${options}</select>
+                        `;
+
+                        card.addEventListener('mouseenter', (e) => {
+                            tooltip.textContent = `${course.name} (${sourceLabel})`;
+                            tooltip.classList.add('show');
+                            const rect = card.getBoundingClientRect();
+                            tooltip.style.left = rect.left + 'px';
+                            tooltip.style.top = (rect.top - 30) + 'px';
+                        });
+                        card.addEventListener('mouseleave', () => tooltip.classList.remove('show'));
+
+                        card.addEventListener('dragstart', (e) => {
+                            e.dataTransfer.setData('text/plain', JSON.stringify({ courseId: course.id }));
+                        });
+
+                        const select = card.querySelector('.rank-dropdown');
+                        select.addEventListener('change', (e) => {
+                            e.stopPropagation();
+                            const rank = parseInt(e.target.value);
+                            if (rank) selectRank(course.id, rank);
+                            else {
+                                const idx = rankings.indexOf(course.id);
+                                if (idx !== -1) { rankings[idx] = null; updateUI(); }
+                            }
+                        });
+                        select.addEventListener('click', e => e.stopPropagation());
+                        card.addEventListener('click', () => toggleSelection(course.id));
+
+                        grid.appendChild(card);
+                    });
+
+                    section.appendChild(grid);
+                    courseListContainer.appendChild(section);
+                }
+            });
+        }
+
+        function selectRank(courseId, rank) {
+            const targetIndex = rank - 1;
+            const existingIndex = rankings.indexOf(courseId);
+            if (existingIndex !== -1) {
+                const temp = rankings[targetIndex];
+                rankings[targetIndex] = courseId;
+                rankings[existingIndex] = temp;
+            } else {
+                rankings[targetIndex] = courseId;
+            }
+            updateUI();
+            showToast(`เลือกอันดับ ${rank}`, 'success');
+        }
+
+        function toggleSelection(courseId) {
+            const idx = rankings.indexOf(courseId);
+            if (idx !== -1) {
+                if (courseId >= 1000) {
+                    customCourses = customCourses.filter(c => c.id !== courseId);
+                    allCourses = allCourses.filter(c => c.id !== courseId);
+                    const inputIdx = courseId - 1000;
+                    const input = document.querySelector(`[data-custom-id="c${inputIdx + 1}"]`);
+                    if (input) input.value = '';
+                }
+                rankings[idx] = null;
+                updateUI();
+                showToast('ลบออกแล้ว');
+            } else {
+                const emptyIdx = rankings.findIndex(r => r === null);
+                if (emptyIdx !== -1) {
+                    rankings[emptyIdx] = courseId;
+                    updateUI();
+                    showToast(`เพิ่มอันดับ ${emptyIdx + 1}`, 'success');
+                } else {
+                    showToast('เลือกครบ 20 แล้ว!', 'warning');
+                }
+            }
+        }
+
+        function updateUI() {
+            renderRankings();
+            renderCourses();
+            const count = rankings.filter(r => r !== null).length;
+            selectedCountEl.textContent = count;
+            collapsedInfo.textContent = `${count}/20`;
+            btnSubmit.disabled = count < 20;
+        }
+
+        function showToast(msg, type = '') {
+            toast.textContent = msg;
+            toast.className = `toast ${type} show`;
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function setupEventListeners() {
+            searchInput.addEventListener('input', (e) => { searchQuery = e.target.value; renderCourses(); });
+
+            document.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    currentCategory = tab.dataset.category;
+                    renderCourses();
+                });
+            });
+
+            document.getElementById('scrollLeft').addEventListener('click', () => filterScroll.scrollBy({ left: -150, behavior: 'smooth' }));
+            document.getElementById('scrollRight').addEventListener('click', () => filterScroll.scrollBy({ left: 150, behavior: 'smooth' }));
+
+            document.getElementById('sidebarToggle').addEventListener('click', () => leftSidebar.classList.toggle('collapsed'));
+
+            document.getElementById('viewNormal').addEventListener('click', () => {
+                document.getElementById('viewNormal').classList.add('active');
+                document.getElementById('viewCompact').classList.remove('active');
+                document.body.classList.remove('compact-mode');
+            });
+            document.getElementById('viewCompact').addEventListener('click', () => {
+                document.getElementById('viewCompact').classList.add('active');
+                document.getElementById('viewNormal').classList.remove('active');
+                document.body.classList.add('compact-mode');
+            });
+
+            document.getElementById('addCourseBtn').addEventListener('click', () => {
+                const inputList = document.getElementById('customInputList');
+                // Remove dynamic rows (6+) first, keep only original 5
+                inputList.querySelectorAll('.custom-input-row-dynamic').forEach(r => r.remove());
+                // Restore values for first 5
+                document.querySelectorAll('[data-custom-id]').forEach((input, idx) => {
+                    if (idx >= 5) return; // skip, handled below
+                    const existingCourse = customCourses.find(c => c.id === 1000 + idx);
+                    input.value = existingCourse ? existingCourse.name : '';
+                    input.classList.remove('error');
+                });
+                // Re-create dynamic rows for existing custom courses beyond 5
+                for (let i = 5; i < 20; i++) {
+                    const existingCourse = customCourses.find(c => c.id === 1000 + i);
+                    if (existingCourse) {
+                        addCustomInputRow(i + 1, existingCourse.name);
+                    }
+                }
+                updateAddMoreBtnVisibility();
+                modalOverlay.classList.add('show');
+            });
+            document.getElementById('modalClose').addEventListener('click', () => modalOverlay.classList.remove('show'));
+
+            // Listen for typing in first 5 inputs to show/hide + button in real-time
+            for (let i = 1; i <= 5; i++) {
+                const el = document.querySelector(`[data-custom-id="c${i}"]`);
+                if (el) el.addEventListener('input', updateAddMoreBtnVisibility);
+            }
+            document.getElementById('modalCancel').addEventListener('click', () => modalOverlay.classList.remove('show'));
+            document.getElementById('modalSave').addEventListener('click', saveCustomCourses);
+
+            document.getElementById('btnClear').addEventListener('click', () => {
+                rankings = new Array(20).fill(null);
+                document.querySelectorAll('[data-custom-id]').forEach(input => { input.value = ''; input.classList.remove('error'); });
+                document.querySelectorAll('.custom-input-row-dynamic').forEach(r => r.remove());
+                customCourses = [];
+                allCourses = [...courses];
+                updateUI();
+                showToast('ล้างทั้งหมดแล้ว');
+            });
+
+            btnSubmit.addEventListener('click', handleSubmit);
+        }
+
+        function saveCustomCourses() {
+            let hasError = false;
+            const newNames = [];
+            const inputs = document.querySelectorAll('[data-custom-id]');
+
+            inputs.forEach((input) => {
+                input.classList.remove('error');
+                const name = input.value.trim();
+                if (name) {
+                    if (newNames.includes(name.toLowerCase())) {
+                        input.classList.add('error');
+                        hasError = true;
+                        showToast('วิชาซ้ำกัน!', 'error');
+                        return;
+                    }
+                    const existsInMain = courses.some(c => c.name.toLowerCase() === name.toLowerCase());
+                    if (existsInMain) {
+                        input.classList.add('error');
+                        hasError = true;
+                        showToast(`"${name}" มีอยู่แล้ว`, 'error');
+                        return;
+                    }
+                    newNames.push(name.toLowerCase());
+                }
+            });
+
+            if (hasError) return;
+
+            customCourses.forEach(cc => {
+                const idx = rankings.indexOf(cc.id);
+                if (idx !== -1) rankings[idx] = null;
+            });
+
+            allCourses = [...courses];
+            customCourses = [];
+
+            inputs.forEach((input, idx) => {
+                const name = input.value.trim();
+                if (name) {
+                    const customId = 1000 + idx;
+                    const newCourse = { id: customId, name, category: 'custom', source: 'เพิ่มเอง' };
+                    customCourses.push(newCourse);
+                    allCourses.push(newCourse);
+                    const emptyIdx = rankings.findIndex(r => r === null);
+                    if (emptyIdx !== -1) rankings[emptyIdx] = customId;
+                }
+            });
+
+            modalOverlay.classList.remove('show');
+            updateUI();
+            if (customCourses.length > 0) showToast(`เพิ่ม ${customCourses.length} วิชาแล้ว`, 'success');
+            else showToast('ล้างวิชาที่เพิ่มเองแล้ว');
+        }
+
+        async function handleSubmit() {
+            const center = document.getElementById('centerSearch').value.trim();
+            if (!center) { showToast('กรุณาเลือกประธานกลุ่ม', 'warning'); return; }
+            if (GOOGLE_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') { showToast('ยังไม่ได้ตั้งค่า URL', 'error'); return; }
+            if (submittedCenters.has(center)) { showToast('ศูนย์นี้ส่งข้อมูลแล้ว!', 'error'); return; }
+
+            const timestamp = new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' });
+            const formData = { timestamp, center, totalSelected: rankings.filter(r => r !== null).length };
+
+            for (let i = 0; i < 20; i++) {
+                const course = rankings[i] ? allCourses.find(c => c.id === rankings[i]) : null;
+                formData[`rank${i + 1}`] = course ? course.name : '';
+            }
+            for (let i = 0; i < 5; i++) formData[`customCourse${i + 1}`] = customCourses[i]?.name || '';
+            for (let i = 5; i < 20; i++) {
+                const cc = customCourses.find(c => c.id === 1000 + i);
+                if (cc) formData[`customCourse${i + 1}`] = cc.name;
+                else formData[`customCourse${i + 1}`] = '';
+            }
+
+            loadingOverlay.classList.add('show');
+            btnSubmit.disabled = true;
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
+                loadingOverlay.classList.remove('show');
+                showToast('ส่งสำเร็จ! 🎉', 'success');
+                submittedCenters.add(center);
+                setTimeout(() => {
+                    rankings = new Array(20).fill(null);
+                    document.getElementById('centerSearch').value = '';
+                    document.querySelectorAll('[data-custom-id]').forEach(input => input.value = '');
+                    document.querySelectorAll('.custom-input-row-dynamic').forEach(r => r.remove());
+                    customCourses = [];
+                    allCourses = [...courses];
+                    updateUI();
+                }, 2000);
+            } catch (error) {
+                loadingOverlay.classList.remove('show');
+                btnSubmit.disabled = false;
+                showToast('เกิดข้อผิดพลาด', 'error');
+            }
+        }
+
+        function addCustomInputRow(num, value) {
+            const inputList = document.getElementById('customInputList');
+            const row = document.createElement('div');
+            row.className = 'custom-input-row custom-input-row-dynamic';
+            row.innerHTML = `<span>${num}</span><input type="text" placeholder="พิมพ์ชื่อวิชา..." data-custom-id="c${num}" value="${value || ''}">`;
+            inputList.appendChild(row);
+            // Scroll to bottom
+            const scrollEl = document.getElementById('customInputScroll');
+            if (scrollEl) scrollEl.scrollTop = scrollEl.scrollHeight;
+        }
+
+        function updateAddMoreBtnVisibility() {
+            const btn = document.getElementById('btnAddMoreCustom');
+            const totalInputs = document.querySelectorAll('[data-custom-id]').length;
+            // ซ่อนถ้าครบ 20 ช่องแล้ว
+            if (totalInputs >= 20) {
+                btn.classList.add('hidden');
+                return;
+            }
+            // ซ่อนถ้า 5 ช่องแรกยังกรอกไม่ครบ
+            const first5 = document.querySelectorAll('[data-custom-id="c1"], [data-custom-id="c2"], [data-custom-id="c3"], [data-custom-id="c4"], [data-custom-id="c5"]');
+            const allFilled = Array.from(first5).every(input => input.value.trim() !== '');
+            if (!allFilled) {
+                btn.classList.add('hidden');
+            } else {
+                btn.classList.remove('hidden');
+            }
+        }
+
+        document.getElementById('btnAddMoreCustom').addEventListener('click', () => {
+            const totalInputs = document.querySelectorAll('[data-custom-id]').length;
+            if (totalInputs >= 20) {
+                showToast('เพิ่มได้สูงสุด 20 วิชาเท่านั้น', 'warning');
+                return;
+            }
+            addCustomInputRow(totalInputs + 1, '');
+            updateAddMoreBtnVisibility();
+        });
+
+        init();
+    </script>
+</body>
+</html>
